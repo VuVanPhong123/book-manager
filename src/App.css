@@ -1,0 +1,7 @@
+html {
+  overflow-y: scroll; 
+}
+.screen{
+    display: flex;
+    flex-direction: column;
+}
