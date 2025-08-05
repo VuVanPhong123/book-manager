@@ -1,6 +1,6 @@
 import './App.css';
 import Navbar from './components/Navbar/Navbar';
-import Home from './pages/Home';
+import Home from './pages/Home/Home';
 import BookList from './pages/BookList/BookList'; 
 import BookFinding from './pages/BookFinding/BookFinding';
 import BookManage from './pages/BookManage/BookManage';

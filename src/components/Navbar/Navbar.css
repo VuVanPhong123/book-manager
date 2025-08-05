@@ -6,6 +6,11 @@
   background-color: #3498db;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   list-style: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
 }
 .navBar a {
   flex: 1; 

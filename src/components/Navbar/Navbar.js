@@ -8,7 +8,7 @@ const Navbar = () => {
   return (
     <nav className="navBar">
       <Link to="/">
-        <button className={`navButton ${isActive("/home") ? "active" : ""}`}>
+        <button className={`navButton ${isActive("/") ? "active" : ""}`}>
           <i class="fa-solid fa-house"></i> Home
         </button>
       </Link>

@@ -17,6 +17,7 @@
 
 /* Layout */
 .login-container {
+  margin: 2rem auto;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -147,7 +148,6 @@ input:focus {
   font-size: 14px;
 }
 .profile-container {
-  position: relative;
   max-width: 800px;
   margin: 2rem auto;
   padding: 2rem;
@@ -165,7 +165,7 @@ input:focus {
   align-items: center;
   gap: 8px;
   padding: 12px 24px;
-  background: #f5f7fa;
+  background: #cbdaf1;
   color: #4a6fa5;
   border: none;
   border-radius: 8px;
@@ -177,7 +177,7 @@ input:focus {
 }
 
 .logout-button:hover {
-  background: #e1e8f0;
+  background: #90bdf1;
   transform: translateY(-2px);
   box-shadow: 0 4px 15px rgba(74, 111, 165, 0.15);
 }
@@ -195,3 +195,4 @@ input:focus {
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+
