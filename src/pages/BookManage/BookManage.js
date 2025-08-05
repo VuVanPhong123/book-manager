@@ -1,5 +1,5 @@
 import { useState, useEffect} from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import BookPopUp from '../../components/BookItem/BookPopUp';
 import PaginationControls from '../../components/BookItem/pageControl';
 import BookGridEdit from '../../components/BookItem/BookGridEdit'; 
@@ -9,7 +9,7 @@ import CategoryFilter from '../../components/BookItem/CategoryFilter';
 import EditBookPopup from '../../components/BookItem/EditBookPopUp';
 import './BookManage.css';
 
-const BookFinding = () => {
+const BookManage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [inputValue, setInputValue] = useState('');
   const [filteredBooks, setFilteredBooks] = useState([]);
@@ -17,7 +17,7 @@ const BookFinding = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState([])
   const [click, setClick] = useState(false)
-
+  const navigate = useNavigate();
   const [editingBook, setEditingBook] = useState(null);
   const [showEdit, setShowEdit] = useState(false);
 
@@ -65,7 +65,10 @@ const BookFinding = () => {
     const searchValue = e.target.elements.search?.value || '';
     setInputValue(searchValue);
   };
-
+  
+  const noti = () => {
+    navigate('/logIn');
+  }
   const toggleCategory = (category) => {
     setSelectedCategories(prev =>
       prev.includes(category)
@@ -117,64 +120,74 @@ const BookFinding = () => {
   const emptyMessage = inputValue 
     ? `No books found for "${inputValue}"`
     : 'Enter a search term to find books';
-
-  return (
-    <div className="book-finding-page">
-      <h1 className="page-title">Finding Book</h1>
-      
-      <form onSubmit={handleSearch} className="search-bar">
-        <input
-          type="text"
-          name="search"
-          placeholder = "Search by author's name or title"
-          className="search-input"
-          defaultValue={inputValue} 
+  if (localStorage.getItem('check')==='true')
+    return (
+        <div className="book-finding-page">
+        <h1 className="page-title">Book managing</h1>
+        
+        <form onSubmit={handleSearch} className="search-bar">
+            <input
+            type="text"
+            name="search"
+            placeholder = "Search by author's name or title"
+            className="search-input"
+            defaultValue={inputValue} 
+            />
+            <button onClick={clickCheck} type="submit" className="search-btn">
+            Search
+            </button>
+        </form>
+        <CategoryFilter 
+            categories={categories} 
+            selectedCategories={selectedCategories}
+            onToggleCategory={toggleCategory}
+            books={books}  
         />
-        <button onClick={clickCheck} type="submit" className="search-btn">
-          Search
-        </button>
-      </form>
-      <CategoryFilter 
-        categories={categories} 
-        selectedCategories={selectedCategories}
-        onToggleCategory={toggleCategory}
-        books={books}  
-      />
-      <BookGridEdit
-        books={currentBooks}
-        onBookSelect={handleBookSelect}
-        onDeleteBook={handleDeleteBook}
-        onEditBook={handleEditBook}
-      />
-
-      {showEdit && (
-        <EditBookPopup
-            book={editingBook}
-            onClose={() => setShowEdit(false)}
-            onSave={handleSaveEdit}
+        <BookGridEdit
+            books={currentBooks}
+            onBookSelect={handleBookSelect}
+            onDeleteBook={handleDeleteBook}
+            onEditBook={handleEditBook}
         />
+
+        {showEdit && (
+            <EditBookPopup
+                book={editingBook}
+                onClose={() => setShowEdit(false)}
+                onSave={handleSaveEdit}
+            />
+            )}
+        {currentBooks.length === 0 && (
+            <p>{emptyMessage}</p>
         )}
-      {currentBooks.length === 0 && (
-        <p>{emptyMessage}</p>
-      )}
 
-      {filteredBooks.length > booksPerPage && (
-        <PaginationControls
-          currentPage={pageNum}
-          totalItems={filteredBooks.length}
-          itemsPerPage={booksPerPage}
-          onPageChange={handlePageChange}
-        />
-      )}
+        {filteredBooks.length > booksPerPage && (
+            <PaginationControls
+            currentPage={pageNum}
+            totalItems={filteredBooks.length}
+            itemsPerPage={booksPerPage}
+            onPageChange={handlePageChange}
+            />
+        )}
 
-      {showPopup && (
-        <BookPopUp 
-          book={selectedBook} 
-          onClose={closePopup} 
-        />
-      )}
-    </div>
-  );
+        {showPopup && (
+            <BookPopUp 
+            book={selectedBook} 
+            onClose={closePopup} 
+            />
+        )}
+        </div>
+    )
+    else return(
+        <div className='notification'>
+            <div className='notification-message'>
+                You're not allowed to access this page
+            </div>
+            <button onClick={noti}>
+                Please login to continue
+            </button>
+        </div>
+    )
 };
 
-export default BookFinding;
+export default BookManage;

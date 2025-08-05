@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, createContext } from 'react';
 import './Login.css'; 
 import { useNavigate } from 'react-router-dom';
 import account from "../../data/Account.json"
@@ -8,6 +8,7 @@ const Login= () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const [check, setCheck] = useState(localStorage.getItem('check')==='true');  
+  
   const handleLogin = (e) => {
     e.preventDefault(); 
     if (account.gmail === email && account.password === password){
@@ -26,7 +27,7 @@ const Login= () => {
   }
   const handleGuestLogin = () => {
     console.log(localStorage.getItem("check"))
-    navigate('/home');
+    navigate('/');
   };
     if(!check)
         return (
