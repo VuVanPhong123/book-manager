@@ -1,7 +1,8 @@
 import { useState, createContext } from 'react';
 import './Login.css'; 
 import { useNavigate } from 'react-router-dom';
-import account from "../../data/Account.json"
+import account from "../../data/Account.json";
+import UserProfile from '../../components/User/UserProfile';
 const Login= () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -27,7 +28,7 @@ const Login= () => {
   }
   const handleGuestLogin = () => {
     console.log(localStorage.getItem("check"))
-    navigate('/');
+    navigate('/bookFind');
   };
     if(!check)
         return (
@@ -79,7 +80,13 @@ const Login= () => {
             </div>
         );
     else return(
-        <button onClick={handleLogout}>log out</button>
+        <div className="profile-container">
+            <UserProfile />
+            <button className="logout-button" onClick={handleLogout}>
+                Log Out
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+            </button>
+        </div>
     );
 };
 
