@@ -88,3 +88,87 @@
   text-decoration: underline;
 }
 
+.save-btn, .cancel-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.save-btn {
+  background-color: #4a6fa5;
+  color: white;
+  border: none;
+}
+
+.save-btn:hover {
+  background-color: #3a5a80;
+}
+
+.cancel-btn {
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+}
+
+.cancel-btn:hover {
+  background-color: #e5e5e5;
+}
+/* Add these to BookPopUp.css */
+textarea {
+  width: 100%;
+  padding: 0.5rem;
+  margin-top: 0.25rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  resize: vertical;
+  min-height: 80px;
+}
+
+.categories-list {
+  margin: 0.5rem 0;
+}
+
+.category-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.category-item input {
+  flex: 1;
+  padding: 0.5rem;
+}
+
+.remove-category-btn {
+  background-color: #d9534f;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.add-category {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.add-category input {
+  flex: 1;
+  padding: 0.5rem;
+}
+
+.add-category-btn {
+  background-color: #5cb85c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0 1rem;
+  cursor: pointer;
+}

@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types';
 import BookDetail from './BookDetail';
-import './BookGridEdit.css'; 
+import './BookGridEdit.css';
 
-const BookGrid = ({ books, onBookSelect }) => {
+const BookGrid = ({ books, onBookSelect, onDeleteBook, onEditBook }) => {
   if (!books || books.length === 0) {
     return (
       <p className="no-results">
@@ -24,6 +24,20 @@ const BookGrid = ({ books, onBookSelect }) => {
             >
               Show Details
             </button>
+            <button 
+                onClick={() => onEditBook(book)}
+                className="edit-btn"
+                aria-label={`Edit ${book.title}`}
+              >
+                Edit
+              </button>
+              <button 
+                onClick={() => onDeleteBook(book)}
+                className="delete-btn"
+                aria-label={`Delete ${book.title}`}
+              >
+                Delete
+              </button>
           </div>
         </div>
       ))}
@@ -33,7 +47,9 @@ const BookGrid = ({ books, onBookSelect }) => {
 
 BookGrid.propTypes = {
   books: PropTypes.arrayOf(PropTypes.object).isRequired,
-  onBookSelect: PropTypes.func.isRequired
+  onBookSelect: PropTypes.func.isRequired,
+  onDeleteBook: PropTypes.func.isRequired,
+  onEditBook: PropTypes.func.isRequired
 };
 
 export default BookGrid;

@@ -3,6 +3,7 @@
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 3rem;
 }
+
 .book-card {
   background: white;
   border-radius: 8px;
@@ -14,12 +15,13 @@
   margin-bottom: 0;
   transition: all 0.3s;
 }
+
 .book-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
-.book-card .book-header  {
+.book-card .book-header {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -35,7 +37,6 @@
   border-radius: 4px;
   margin: 0 auto; 
 }
-
 
 .book-card .book-header p {
   font-weight: 700;
@@ -60,19 +61,65 @@
   color: #4a6fa5;
 }
 
+/* Button Container */
+.book-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: auto;
+}
+
 .toggle-details-btn {
   background-color: #4a6fa5;
   color: white;
   border: none;
-  padding: 0.75rem;
+  padding: 0.5rem;
   border-radius: 4px;
   cursor: pointer;
   font-weight: 600;
-  width: 100%;
-  margin-top: auto; 
+  flex: 1;
   transition: all 0.3s;
 }
 
 .toggle-details-btn:hover {
   background-color: #3a5a8f;
+}
+
+.edit-btn {
+  background-color: #5bc0de;
+  color: white;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  flex: 1;
+  transition: all 0.3s;
+}
+
+.edit-btn:hover {
+  background-color: #46b8da;
+}
+
+.delete-btn {
+  background-color: #d9534f;
+  color: white;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  flex: 1;
+  transition: all 0.3s;
+}
+
+.delete-btn:hover {
+  background-color: #c9302c;
+}
+
+.no-results {
+  text-align: center;
+  color: #666;
+  font-size: 1.2rem;
+  grid-column: 1 / -1;
+  padding: 2rem;
 }
