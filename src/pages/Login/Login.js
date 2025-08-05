@@ -14,7 +14,7 @@ const Login= () => {
         setCheck(true);
         localStorage.setItem('check', 'true');
         console.log('Logging in with:', { email, password });
-        navigate('/home');
+        navigate('/');
     }
     else {
         setError('Invalid email or password');

@@ -1,9 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import BookPopUp from '../../components/BookItem/BookPopUp';
 import PaginationControls from '../../components/BookItem/pageControl';
-import BookGrid from '../../components/BookItem/BookGrid'; // Import the BookGrid component
+import BookGrid from '../../components/BookItem/BookGrid'; 
 import books from '../../data/Amazon_popular_books_dataset.json';
+import categories from '../../data/Category.json';
+import CategoryFilter from '../../components/BookItem/CategoryFilter';
+
 import './BookFinding.css';
 
 const BookFinding = () => {
@@ -12,7 +15,9 @@ const BookFinding = () => {
   const [filteredBooks, setFilteredBooks] = useState([]);
   const [selectedBook, setSelectedBook] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
-  
+  const [selectedCategories, setSelectedCategories] = useState([])
+  const [click, setClick] = useState(false)
+
   const pageNum = parseInt(searchParams.get('page')) || 0;
   const booksPerPage = 12;
   const currentBooks = filteredBooks.slice(
@@ -21,26 +26,60 @@ const BookFinding = () => {
   );
 
   useEffect(() => {
-    const results = books.filter(book => {
-      const title = book.title ? book.title.toLowerCase() : '';
-      const author = book.brand ? book.brand.toLowerCase() : '';
-      const search = inputValue.toLowerCase().trim();
-      return title.includes(search) || author.includes(search);
-    });
-    setFilteredBooks(results);
-  }, [inputValue, setSearchParams]);
+  const results = books.filter(book => {
+
+    const searchTerm = inputValue.toLowerCase().trim();
+    const titleMatch = book.title?.toLowerCase().includes(searchTerm) ?? false;
+    const authorMatch = book.brand?.toLowerCase().includes(searchTerm) ?? false;
+    
+    let categoryMatch = selectedCategories.length === 0;
+    
+    if (!categoryMatch && book.categories) {
+      const categoryPaths = Array.isArray(book.categories) ? book.categories : [];
+      
+      categoryMatch = categoryPaths.some(cat => {
+        try {
+          const path = Array.isArray(cat) 
+            ? cat.join(' / ') 
+            : String(cat || '');
+          return selectedCategories.some(selectedCat => 
+            path.toLowerCase().includes(selectedCat.toLowerCase())
+          );
+        } catch {
+          return false;
+        }
+      });
+    }
+
+    return (titleMatch || authorMatch) && categoryMatch;
+  });
+
+  setFilteredBooks(results);
+}, [inputValue,click, setSearchParams]);
 
   const handleSearch = (e) => {
     e.preventDefault();
-    const searchValue = e.target.elements.search?.value || inputValue;
+    const searchValue = e.target.elements.search?.value || '';
     setInputValue(searchValue);
+  };
+
+  const toggleCategory = (category) => {
+    setSelectedCategories(prev =>
+      prev.includes(category)
+        ? prev.filter(c => c !== category)
+        : [...prev, category]
+    );
   };
 
   const handleBookSelect = (book) => {
     setSelectedBook(book);
     setShowPopup(true);
   };
-
+  const clickCheck =()=>{
+    if (click===false)
+      setClick(true);
+    else setClick(false);
+  }
   const closePopup = () => setShowPopup(false);
 
   const handlePageChange = (direction) => {
@@ -61,14 +100,20 @@ const BookFinding = () => {
         <input
           type="text"
           name="search"
-          placeholder="Search by title or author..."
+          placeholder = "Search by author's name or title"
           className="search-input"
           defaultValue={inputValue} 
         />
-        <button type="submit" className="search-btn">
+        <button onClick={clickCheck} type="submit" className="search-btn">
           Search
         </button>
       </form>
+      <CategoryFilter 
+        categories={categories} 
+        selectedCategories={selectedCategories}
+        onToggleCategory={toggleCategory}
+        books={books}  
+      />
       <BookGrid
         books={currentBooks}
         onBookSelect={handleBookSelect}
