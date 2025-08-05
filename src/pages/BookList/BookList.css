@@ -1,7 +1,8 @@
 .book-list-page {
   max-width: 80%;
   margin: 0 auto;
-  padding-bottom  : 8rem;
+  padding-bottom: 6rem;
+  padding-top: 2rem
 }
 
 .page-title {

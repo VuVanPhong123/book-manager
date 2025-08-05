@@ -49,7 +49,6 @@ const BookFinding = () => {
     window.scrollTo({ top: 0 });
   };
 
-  //empty message 
   const emptyMessage = inputValue 
     ? `No books found for "${inputValue}"`
     : 'Enter a search term to find books';
@@ -75,7 +74,7 @@ const BookFinding = () => {
         onBookSelect={handleBookSelect}
       />
       {currentBooks.length === 0 && (
-        <p className="no-results">{emptyMessage}</p>
+        <p>{emptyMessage}</p>
       )}
 
       {filteredBooks.length > booksPerPage && (
