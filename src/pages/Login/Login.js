@@ -1,4 +1,4 @@
-import { useState, createContext } from 'react';
+import { useState } from 'react';
 import './Login.css'; 
 import { useNavigate } from 'react-router-dom';
 import account from "../../data/Account.json";
@@ -16,7 +16,6 @@ const Login= () => {
         setCheck(true);
         localStorage.setItem('check', 'true');
         console.log('Logging in with:', { email, password });
-        navigate('/');
     }
     else {
         setError('Invalid email or password');
