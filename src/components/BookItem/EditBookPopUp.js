@@ -51,7 +51,6 @@ const EditBookPopup = ({ book, onClose, onSave }) => {
     onSave({
       ...book,
       ...formData,
-      // Ensure categories is always an array
       categories: formData.categories.filter(cat => cat && cat.trim() !== '')
     });
     onClose();

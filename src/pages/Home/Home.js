@@ -10,7 +10,7 @@ const Home = () => {
           <h1>Welcome to Our Digital Library</h1>
           <p>Discover thousands of books at your fingertips</p>
           <div className="cta-buttons">
-            <Link to="/books" className="cta-button browse-btn">Find Books</Link>
+            <Link to="/bookFind" className="cta-button browse-btn">Find Books</Link>
             <Link to="/login" className="cta-button login-btn">Login</Link>
           </div>
         </div>

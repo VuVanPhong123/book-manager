@@ -14,27 +14,24 @@ const BookGrid = ({ books, onBookSelect, onDeleteBook, onEditBook }) => {
   return (
     <div className="books-container">
       {books.map((book) => (
-        <div key={book.asin || book.id} className="book-card">
+        <div className="book-card">
           <BookDetail book={book} />
           <div className="book-actions">
             <button 
               onClick={() => onBookSelect(book)} 
               className="toggle-details-btn"
-              aria-label={`Show details for ${book.title}`}
             >
               Show Details
             </button>
             <button 
                 onClick={() => onEditBook(book)}
                 className="edit-btn"
-                aria-label={`Edit ${book.title}`}
               >
                 Edit
               </button>
               <button 
                 onClick={() => onDeleteBook(book)}
                 className="delete-btn"
-                aria-label={`Delete ${book.title}`}
               >
                 Delete
               </button>

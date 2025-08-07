@@ -12,9 +12,8 @@ const BookPopup = ({ book, onClose }) => {
           <button 
             onClick={onClose} 
             className="close-popup-btn"
-            aria-label="Close popup"
           >
-            ×
+            x
           </button>
         </div>
         <div className="popup-content">

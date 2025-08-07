@@ -14,13 +14,12 @@ const BookGrid = ({ books, onBookSelect }) => {
   return (
     <div className="books-container">
       {books.map((book) => (
-        <div key={book.asin || book.id} className="book-card">
+        <div className="book-card">
           <BookDetail book={book} />
           <div className="book-actions">
             <button 
               onClick={() => onBookSelect(book)} 
               className="toggle-details-btn"
-              aria-label={`Show details for ${book.title}`}
             >
               Show Details
             </button>

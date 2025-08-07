@@ -15,7 +15,7 @@
   background: white;
   border-radius: 8px;
   width: 80%;
-  max-width: 800px;
+  max-width: 70vw;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
@@ -113,7 +113,7 @@
 .cancel-btn:hover {
   background-color: #e5e5e5;
 }
-/* Add these to BookPopUp.css */
+
 textarea {
   width: 100%;
   padding: 0.5rem;
