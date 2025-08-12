@@ -7,7 +7,7 @@ import BookManage from './pages/BookManage/BookManage';
 import Login from './pages/Login/Login';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
-export default function(){
+export default function App(){
   return(
     <BrowserRouter className='screen'>
       <Navbar/>
@@ -20,4 +20,4 @@ export default function(){
       </Routes>
     </BrowserRouter>
   );
-}
+};

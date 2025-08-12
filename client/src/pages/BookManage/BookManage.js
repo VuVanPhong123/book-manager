@@ -1,4 +1,4 @@
-import { useState, useEffect} from 'react';
+import { useState, useEffect,useRef} from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import BookPopUp from '../../components/BookItem/BookPopUp';
 import PaginationControls from '../../components/BookItem/pageControl';
@@ -28,37 +28,45 @@ const BookManage = () => {
     (pageNum + 1) * booksPerPage
   );
 
+  const selectedCategoriesRef = useRef(selectedCategories);
+
+  // Update ref when categories change
   useEffect(() => {
-  const results = books.filter(book => {
+    selectedCategoriesRef.current = selectedCategories;
+  }, [selectedCategories]);
 
-    const searchTerm = inputValue.toLowerCase().trim();
-    const titleMatch = book.title?.toLowerCase().includes(searchTerm) ?? false;
-    const authorMatch = book.brand?.toLowerCase().includes(searchTerm) ?? false;
-    
-    let categoryMatch = selectedCategories.length === 0;
-    
-    if (!categoryMatch && book.categories) {
-      const categoryPaths = Array.isArray(book.categories) ? book.categories : [];
+  useEffect(() => {
+    const results = books.filter(book => {
+      const searchTerm = inputValue.toLowerCase().trim();
+      const titleMatch = book.title?.toLowerCase().includes(searchTerm) ?? false;
+      const authorMatch = book.brand?.toLowerCase().includes(searchTerm) ?? false;
       
-      categoryMatch = categoryPaths.some(cat => {
-        try {
-          const path = Array.isArray(cat) 
-            ? cat.join(' / ') 
-            : String(cat || '');
-          return selectedCategories.some(selectedCat => 
-            path.toLowerCase().includes(selectedCat.toLowerCase())
-          );
-        } catch {
-          return false;
-        }
-      });
-    }
+      // Use the ref value instead of selectedCategories directly
+      let categoryMatch = selectedCategoriesRef.current.length === 0;
+      
+      if (!categoryMatch && book.categories) {
+        const categoryPaths = Array.isArray(book.categories) ? book.categories : [];
+        
+        categoryMatch = categoryPaths.some(cat => {
+          try {
+            const path = Array.isArray(cat) 
+              ? cat.join(' / ') 
+              : String(cat || '');
+            return selectedCategoriesRef.current.some(selectedCat => 
+              path.toLowerCase().includes(selectedCat.toLowerCase())
+            );
+          } catch {
+            return false;
+          }
+        });
+      }
 
-    return (titleMatch || authorMatch) && categoryMatch;
-  });
+      return (titleMatch || authorMatch) && categoryMatch;
+    });
 
-  setFilteredBooks(results);
-}, [inputValue,click, setSearchParams]);
+    setFilteredBooks(results);
+  }, [inputValue, click, setSearchParams]); // Only include dependencies that should trigger re-filtering
+
 
   const handleSearch = (e) => {
     e.preventDefault();
