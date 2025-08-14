@@ -1,22 +1,22 @@
-import { useState, useEffect,useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import BookPopUp from '../../components/BookItem/BookPopUp';
 import PaginationControls from '../../components/BookItem/pageControl';
 import BookGrid from '../../components/BookItem/BookGrid'; 
-import books from '../../data/Amazon_popular_books_dataset.json';
 import categories from '../../data/Category.json';
 import CategoryFilter from '../../components/BookItem/CategoryFilter';
-
 import './BookFinding.css';
+import { API_URL } from  '../../config';
 
 const BookFinding = () => {
+  const [books, setBooks] = useState([]);
   const [searchParams, setSearchParams] = useSearchParams();
   const [inputValue, setInputValue] = useState('');
   const [filteredBooks, setFilteredBooks] = useState([]);
   const [selectedBook, setSelectedBook] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
-  const [selectedCategories, setSelectedCategories] = useState([])
-  const [click, setClick] = useState(false)
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [click, setClick] = useState(false);
 
   const pageNum = parseInt(searchParams.get('page')) || 0;
   const booksPerPage = 12;
@@ -27,18 +27,25 @@ const BookFinding = () => {
 
   const selectedCategoriesRef = useRef(selectedCategories);
 
-  // Update ref when categories change
   useEffect(() => {
     selectedCategoriesRef.current = selectedCategories;
   }, [selectedCategories]);
 
+  // Lấy dữ liệu sách từ backend
+  useEffect(() => {
+    fetch(`${API_URL}/books`)
+      .then(res => res.json())
+      .then(data => setBooks(data))
+      .catch(err => console.error(err));
+  }, []);
+
+  // Lọc sách dựa trên từ khóa và category
   useEffect(() => {
     const results = books.filter(book => {
       const searchTerm = inputValue.toLowerCase().trim();
       const titleMatch = book.title?.toLowerCase().includes(searchTerm) ?? false;
       const authorMatch = book.brand?.toLowerCase().includes(searchTerm) ?? false;
       
-      // Use the ref value instead of selectedCategories directly
       let categoryMatch = selectedCategoriesRef.current.length === 0;
       
       if (!categoryMatch && book.categories) {
@@ -62,8 +69,7 @@ const BookFinding = () => {
     });
 
     setFilteredBooks(results);
-  }, [inputValue, click, setSearchParams]); // Only include dependencies that should trigger re-filtering
-
+  }, [inputValue, click, books]); 
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -83,11 +89,9 @@ const BookFinding = () => {
     setSelectedBook(book);
     setShowPopup(true);
   };
-  const clickCheck =()=>{
-    if (click===false)
-      setClick(true);
-    else setClick(false);
-  }
+
+  const clickCheck = () => setClick(prev => !prev);
+
   const closePopup = () => setShowPopup(false);
 
   const handlePageChange = (direction) => {
@@ -108,7 +112,7 @@ const BookFinding = () => {
         <input
           type="text"
           name="search"
-          placeholder = "Search by author's name or title"
+          placeholder="Search by author's name or title"
           className="search-input"
           defaultValue={inputValue} 
         />
@@ -116,16 +120,21 @@ const BookFinding = () => {
           Search
         </button>
       </form>
-      <CategoryFilter 
-        categories={categories} 
-        selectedCategories={selectedCategories}
-        onToggleCategory={toggleCategory}
-        books={books}  
-      />
+
+      {books.length > 0 && (
+        <CategoryFilter 
+          categories={categories}
+          selectedCategories={selectedCategories}
+          onToggleCategory={toggleCategory}
+          books={books}
+        />
+      )}
+
       <BookGrid
         books={currentBooks}
         onBookSelect={handleBookSelect}
       />
+
       {currentBooks.length === 0 && (
         <p>{emptyMessage}</p>
       )}

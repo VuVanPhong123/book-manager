@@ -1,7 +1,8 @@
 import PropTypes from 'prop-types';
 import BookSpecificDetail from './BookSpecificDetail'; 
 import './BookPopUp.css'; 
-const BookPopup = ({ book, onClose }) => {
+
+const BookPopup = ({ book, onClose}) => {
   if (!book) return null;
 
   return (
@@ -19,6 +20,7 @@ const BookPopup = ({ book, onClose }) => {
         <div className="popup-content">
           <BookSpecificDetail book={book} />
         </div>
+
       </div>
     </div>
   );
@@ -26,7 +28,7 @@ const BookPopup = ({ book, onClose }) => {
 
 BookPopup.propTypes = {
   book: PropTypes.object,
-  onClose: PropTypes.func.isRequired
+  onClose: PropTypes.func.isRequired,
 };
 
 export default BookPopup;
