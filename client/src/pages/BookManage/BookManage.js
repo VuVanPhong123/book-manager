@@ -47,7 +47,7 @@ const BookManage = () => {
       .catch(err => console.error(err));
   }, []);
 
-  // Lọc sách khi tìm kiếm hoặc thay đổi category
+  // Lọc sách
   useEffect(() => {
     const results = books.filter(book => {
       const searchTerm = inputValue.toLowerCase().trim();
@@ -125,24 +125,52 @@ const BookManage = () => {
     setShowEdit(true);
   };
 
+  // add sách
+const handleAddBook = () => {
+  const emptyBook = {
+    asin: "",
+    title: "",
+    brand: "",
+    description: "",
+    categories: [],
+    price: "",
+    image: "",
+    format: [], // hoặc [{ name: "", url: "", price: "" }]
+    delivery: [],
+    best_sellers_rank: [] // hoặc [{ category: "", rank: "" }]
+  };
+
+  setEditingBook(emptyBook);
+  setShowEdit(true);
+};
+
+
   // CẬP NHẬT SÁCH
-  const handleSaveEdit = (updatedBook) => {
-    fetch(`${API_URL}/books/${encodeURIComponent(updatedBook.asin)}`, {
-      method: "PUT",
+  const handleSaveEdit = (bookData) => {
+    const isNew = !bookData.asin; 
+
+    fetch(`${API_URL}/books${isNew ? "" : "/" + encodeURIComponent(bookData.asin)}`, {
+      method: isNew ? "POST" : "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(updatedBook)
+      body: JSON.stringify(bookData)
     })
       .then(res => {
-        if (!res.ok) throw new Error("Failed to update book");
+        if (!res.ok) throw new Error(isNew ? "Failed to add book" : "Failed to update book");
         return res.json();
       })
       .then(data => {
-        setBooks(prev => prev.map(book => book.asin === data.asin ? data : book));
-        setFilteredBooks(prev => prev.map(book => book.asin === data.asin ? data : book));
+        if (isNew) {
+          setBooks(prev => [...prev, data]);
+          setFilteredBooks(prev => [...prev, data]);
+        } else {
+          setBooks(prev => prev.map(book => book.asin === data.asin ? data : book));
+          setFilteredBooks(prev => prev.map(book => book.asin === data.asin ? data : book));
+        }
         setShowEdit(false);
       })
-      .catch(err => console.error("Update error:", err));
+      .catch(err => console.error(isNew ? "Add error:" : "Update error:", err));
   };
+
 
 
 
@@ -181,6 +209,9 @@ const BookManage = () => {
           />
           <button onClick={clickCheck} type="submit" className="search-btn">
             Search
+          </button>
+          <button onClick={handleAddBook} className="search-btn">
+            Add Book
           </button>
         </form>
 

@@ -42,39 +42,67 @@ const BookCategories = ({ categories }) => {
   );
 };
 
-const FormatList = ({ formats }) => (
-  <div>
-    <h3>Available Formats:</h3>
-    <ul>
-      {formats.map((format, idx) => (
-        <li key={idx}>
-          <a href={`https://www.amazon.com${format.url}`} >
-            {format.name} - {format.price}
-          </a>
-        </li>
-      ))}
-    </ul>
-  </div>
-);
+const FormatList = ({ formats }) => {
+  const formatList = Array.isArray(formats) ? formats : [];
+  
+  return (
+    <div>
+      <h3>Available Formats:</h3>
+      <ul>
+        {formatList.length > 0 ? (
+          formatList.map((format, idx) => (
+            <li key={idx}>
+              <a href={`https://www.amazon.com${format.url}`}>
+                {format.name} - {format.price}
+              </a>
+            </li>
+          ))
+        ) : (
+          <li>No formats available</li>
+        )}
+      </ul>
+    </div>
+  );
+};
 
-const DeliveryInfo = ({ delivery }) => (
-  <div>
-    <h3>Delivery Options:</h3>
-    <ul>
-      {delivery.map((option, idx) => <li key={idx}>{option}</li>)}
-    </ul>
-  </div>
-);
 
-const BestSellerRank = ({ ranks }) => (
-  <div>
-    <h3>Best Seller Ranks:</h3>
-    <ul>
-      {ranks.map((item, idx) => (
-        <li key={idx}>{item.category} - Rank #{item.rank}</li>
-      ))}
-    </ul>
-  </div>
-);
+const DeliveryInfo = ({ delivery }) => {
+  const deliveryList = Array.isArray(delivery) ? delivery : [];
+
+  return (
+    <div>
+      <h3>Delivery Options:</h3>
+      <ul>
+        {deliveryList.length > 0 ? (
+          deliveryList.map((option, idx) => <li key={idx}>{option}</li>)
+        ) : (
+          <li>No delivery options available</li>
+        )}
+      </ul>
+    </div>
+  );
+};
+
+
+const BestSellerRank = ({ ranks }) => {
+  const rankList = Array.isArray(ranks) ? ranks : [];
+
+  return (
+    <div>
+      <h3>Best Seller Ranks:</h3>
+      <ul>
+        {rankList.length > 0 ? (
+          rankList.map((item, idx) => (
+            <li key={idx}>
+              {item.category} - Rank #{item.rank}
+            </li>
+          ))
+        ) : (
+          <li>No best seller rank</li>
+        )}
+      </ul>
+    </div>
+  );
+};
 
 export default BookSpecificDetail;
