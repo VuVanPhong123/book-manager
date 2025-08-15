@@ -31,7 +31,6 @@ const BookFinding = () => {
     selectedCategoriesRef.current = selectedCategories;
   }, [selectedCategories]);
 
-  // Lấy dữ liệu sách từ backend
   useEffect(() => {
     fetch(`${API_URL}/books`)
       .then(res => res.json())
@@ -39,7 +38,6 @@ const BookFinding = () => {
       .catch(err => console.error(err));
   }, []);
 
-  // Lọc sách dựa trên từ khóa và category
   useEffect(() => {
     const results = books.filter(book => {
       const searchTerm = inputValue.toLowerCase().trim();

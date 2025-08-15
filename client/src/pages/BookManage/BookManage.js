@@ -31,12 +31,10 @@ const BookManage = () => {
 
   const selectedCategoriesRef = useRef(selectedCategories);
 
-  // Cập nhật ref khi categories thay đổi
   useEffect(() => {
     selectedCategoriesRef.current = selectedCategories;
   }, [selectedCategories]);
 
-  // Lấy dữ liệu sách từ backend
   useEffect(() => {
     fetch(`${API_URL}/books`)
       .then(res => res.json())
@@ -47,7 +45,6 @@ const BookManage = () => {
       .catch(err => console.error(err));
   }, []);
 
-  // Lọc sách
   useEffect(() => {
     const results = books.filter(book => {
       const searchTerm = inputValue.toLowerCase().trim();
@@ -86,12 +83,10 @@ const BookManage = () => {
     setInputValue(searchValue);
   };
 
-  // Chuyển hướng login nếu chưa đăng nhập
   const noti = () => {
     navigate('/logIn');
   };
 
-  // Toggle category
   const toggleCategory = (category) => {
     setSelectedCategories(prev =>
       prev.includes(category)
@@ -100,7 +95,6 @@ const BookManage = () => {
     );
   };
 
-  // XÓA SÁCH
   const handleDeleteBook = (bookToDelete) => {
     if (window.confirm(`Are you sure you want to delete "${bookToDelete.title}"?`)) {
       fetch(`${API_URL}/books/${encodeURIComponent(bookToDelete.asin)}`, {
@@ -119,33 +113,17 @@ const BookManage = () => {
   };
 
 
-  // Chỉnh sửa sách
   const handleEditBook = (bookToEdit) => {
     setEditingBook(bookToEdit);
     setShowEdit(true);
   };
 
-  // add sách
 const handleAddBook = () => {
-  const emptyBook = {
-    asin: "",
-    title: "",
-    brand: "",
-    description: "",
-    categories: [],
-    price: "",
-    image: "",
-    format: [], // hoặc [{ name: "", url: "", price: "" }]
-    delivery: [],
-    best_sellers_rank: [] // hoặc [{ category: "", rank: "" }]
-  };
-
+  const emptyBook={}; 
   setEditingBook(emptyBook);
   setShowEdit(true);
 };
 
-
-  // CẬP NHẬT SÁCH
   const handleSaveEdit = (bookData) => {
     const isNew = !bookData.asin; 
 
@@ -171,10 +149,6 @@ const handleAddBook = () => {
       .catch(err => console.error(isNew ? "Add error:" : "Update error:", err));
   };
 
-
-
-
-  // Chọn sách để xem popup
   const handleBookSelect = (book) => {
     setSelectedBook(book);
     setShowPopup(true);

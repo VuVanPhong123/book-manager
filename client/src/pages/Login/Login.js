@@ -83,7 +83,7 @@ const Login= () => {
             <UserProfile />
             <button className="logout-button" onClick={handleLogout}>
                 Log Out
-                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                <i className="fa-solid fa-arrow-right-from-bracket"></i>
             </button>
         </div>
     );

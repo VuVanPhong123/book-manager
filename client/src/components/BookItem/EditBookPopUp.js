@@ -10,7 +10,7 @@ const EditBookPopup = ({ book, onClose, onSave }) => {
     categories: Array.isArray(book.categories) ? [...book.categories] : [book.categories || ''],
     delivery: Array.isArray(book.delivery) ? [...book.delivery] : [book.delivery || ''],
     best_sellers_rank: book.best_sellers_rank || [],
-    format: book.format || [],
+    format: book.format || [{ name: "", url: "", price: "" }],
     rating: book.rating || '',
     reviews_count: book.reviews_count || '',
     availability: book.availability || '',

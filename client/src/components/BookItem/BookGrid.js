@@ -14,7 +14,7 @@ const BookGrid = ({ books, onBookSelect }) => {
   return (
     <div className="books-container">
       {books.map((book) => (
-        <div className="book-card">
+        <div className="book-card" key = {book.asin}>
           <BookDetail book={book} />
           <div className="book-actions">
             <button 
