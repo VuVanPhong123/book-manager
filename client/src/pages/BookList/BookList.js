@@ -4,62 +4,79 @@ import BookGrid from '../../components/BookItem/BookGrid';
 import BookPopUp from '../../components/BookItem/BookPopUp';
 import PaginationControls from '../../components/BookItem/pageControl';
 import './BookList.css';
-import { API_URL } from  '../../config';
+import { API_URL } from '../../config';
+
 const BookList = () => {
   const [books, setBooks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const [searchParams, setSearchParams] = useSearchParams();
-  const pageNum = parseInt(searchParams.get('page')) || 0;
+  const pageNum = parseInt(searchParams.get('page')) || 1; // page tính từ 1
   const booksPerPage = 12;
-  const currentBooks = books.slice(pageNum * booksPerPage, (pageNum + 1) * booksPerPage);
+  const [totalBooks, setTotalBooks] = useState(0);
+
   const [selectedBook, setSelectedBook] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
 
   useEffect(() => {
-    fetch(`${API_URL}/books`)
-      .then(res => res.json())
-      .then(data => setBooks(data))
-      .catch(err => console.error(err));
-  }, []);
+    let ignore = false;
+
+    const fetchBooks = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch(`${API_URL}/books?page=${pageNum}&limit=${booksPerPage}`);
+        if (!res.ok) throw new Error('Failed to fetch books');
+        const data = await res.json();
+
+        if (!ignore) {
+          setBooks(data.books || []);
+          setTotalBooks(data.total || 0);
+          setError(null);
+        }
+      } catch (err) {
+        if (!ignore) setError(err.message);
+      } finally {
+        if (!ignore) setLoading(false);
+      }
+    };
+
+    fetchBooks();
+    return () => { ignore = true; };
+  }, [pageNum]);
 
   const handleBookSelect = (book) => {
     setSelectedBook(book);
     setShowPopup(true);
   };
 
-  const closePopup = () => {
-    setShowPopup(false);
-  };
+  const closePopup = () => setShowPopup(false);
 
   const handlePageChange = (direction) => {
-    if (direction === 'next')
-      setSearchParams({ page: pageNum + 1 })
-    else
-      setSearchParams({ page: pageNum - 1 })
+    const nextPage = direction === 'next' ? pageNum + 1 : pageNum - 1;
+    setSearchParams({ page: nextPage });
     window.scrollTo({ top: 0 });
   };
 
-  return (
+   return (
     <div className="book-list-page">
       <h1 className="page-title">Most Popular Books</h1>
+      {error && <p className="error">Lỗi: {error}</p>}
 
-      <BookGrid
-        books={currentBooks}
-        onBookSelect={handleBookSelect}
-      />
+      {!loading && !error && (
+        <>
+          <BookGrid books={books} onBookSelect={handleBookSelect} />
 
-      {showPopup && (
-        <BookPopUp
-          book={selectedBook}
-          onClose={closePopup}
-        />
+          {showPopup && <BookPopUp book={selectedBook} onClose={closePopup} />}
+
+          <PaginationControls
+            currentPage={pageNum}
+            totalItems={totalBooks}
+            itemsPerPage={booksPerPage}
+            onPageChange={handlePageChange}
+          />
+        </>
       )}
-
-      <PaginationControls
-        currentPage={pageNum}
-        totalItems={books.length}
-        itemsPerPage={booksPerPage}
-        onPageChange={handlePageChange}
-      />
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import BookPopUp from '../../components/BookItem/BookPopUp';
 import PaginationControls from '../../components/BookItem/pageControl';
@@ -6,75 +6,57 @@ import BookGrid from '../../components/BookItem/BookGrid';
 import categories from '../../data/Category.json';
 import CategoryFilter from '../../components/BookItem/CategoryFilter';
 import './BookFinding.css';
-import { API_URL } from  '../../config';
+import { API_URL } from '../../config';
 
 const BookFinding = () => {
   const [books, setBooks] = useState([]);
   const [searchParams, setSearchParams] = useSearchParams();
+
   const [inputValue, setInputValue] = useState('');
-  const [filteredBooks, setFilteredBooks] = useState([]);
+  const [selectedCategories, setSelectedCategories] = useState([]);
+
+  // State dùng để thực sự tìm kiếm
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchCategories, setSearchCategories] = useState([]);
+
   const [selectedBook, setSelectedBook] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
-  const [selectedCategories, setSelectedCategories] = useState([]);
-  const [click, setClick] = useState(false);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const pageNum = parseInt(searchParams.get('page')) || 0;
+  const pageNum = parseInt(searchParams.get('page')) || 1;
   const booksPerPage = 12;
-  const currentBooks = filteredBooks.slice(
-    pageNum * booksPerPage,
-    (pageNum + 1) * booksPerPage
-  );
 
-  const selectedCategoriesRef = useRef(selectedCategories);
-
+  // Fetch khi searchQuery / searchCategories / pageNum thay đổi
   useEffect(() => {
-    selectedCategoriesRef.current = selectedCategories;
-  }, [selectedCategories]);
+    const fetchBooks = () => {
+      const params = new URLSearchParams();
+      params.append('page', pageNum);
+      params.append('limit', booksPerPage);
+      if (searchQuery) params.append('search', searchQuery);
+      searchCategories.forEach(cat => params.append('categories', cat));
 
-  useEffect(() => {
-    fetch(`${API_URL}/books`)
-      .then(res => res.json())
-      .then(data => setBooks(data))
-      .catch(err => console.error(err));
-  }, []);
+      fetch(`${API_URL}/books/search?${params.toString()}`)
+        .then(res => res.json())
+        .then(data => {
+          setBooks(Array.isArray(data.books) ? data.books : []);
+          setTotalPages(data.totalPages || 1);
+        })
+        .catch(err => console.error(err));
+    };
 
-  useEffect(() => {
-    const results = books.filter(book => {
-      const searchTerm = inputValue.toLowerCase().trim();
-      const titleMatch = book.title?.toLowerCase().includes(searchTerm) ?? false;
-      const authorMatch = book.brand?.toLowerCase().includes(searchTerm) ?? false;
-      
-      let categoryMatch = selectedCategoriesRef.current.length === 0;
-      
-      if (!categoryMatch && book.categories) {
-        const categoryPaths = Array.isArray(book.categories) ? book.categories : [];
-        
-        categoryMatch = categoryPaths.some(cat => {
-          try {
-            const path = Array.isArray(cat) 
-              ? cat.join(' / ') 
-              : String(cat || '');
-            return selectedCategoriesRef.current.some(selectedCat => 
-              path.toLowerCase().includes(selectedCat.toLowerCase())
-            );
-          } catch {
-            return false;
-          }
-        });
-      }
+    fetchBooks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, searchCategories, pageNum]);
 
-      return (titleMatch || authorMatch) && categoryMatch;
-    });
-
-    setFilteredBooks(results);
-  }, [inputValue, click, books]); 
-
+  // Khi bấm nút Search
   const handleSearch = (e) => {
     e.preventDefault();
-    const searchValue = e.target.elements.search?.value || '';
-    setInputValue(searchValue);
+    setSearchQuery(inputValue);
+    setSearchCategories(selectedCategories);
+    setSearchParams({ page: 1 }); // reset page về 1
   };
 
+  // Toggle category nhưng không tự tìm, chỉ cập nhật state tạm
   const toggleCategory = (category) => {
     setSelectedCategories(prev =>
       prev.includes(category)
@@ -88,64 +70,64 @@ const BookFinding = () => {
     setShowPopup(true);
   };
 
-  const clickCheck = () => setClick(prev => !prev);
-
   const closePopup = () => setShowPopup(false);
 
   const handlePageChange = (direction) => {
-    const newPage = direction === 'next' ? pageNum + 1 : pageNum - 1;
+    let newPage = pageNum;
+    if (direction === 'next' && pageNum < totalPages) newPage++;
+    else if (direction === 'prev' && pageNum > 1) newPage--;
     setSearchParams({ page: newPage });
     window.scrollTo({ top: 0 });
   };
 
-  const emptyMessage = inputValue 
-    ? `No books found for "${inputValue}"`
+  const emptyMessage = searchQuery || searchCategories.length > 0
+    ? 'No books found for your search/filter'
     : 'Enter a search term to find books';
 
   return (
     <div className="book-finding-page">
       <h1 className="page-title">Finding Book</h1>
-      
+
+      {/* Search Form */}
       <form onSubmit={handleSearch} className="search-bar">
         <input
           type="text"
           name="search"
           placeholder="Search by author's name or title"
           className="search-input"
-          defaultValue={inputValue} 
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
         />
-        <button onClick={clickCheck} type="submit" className="search-btn">
-          Search
-        </button>
+        <button type="submit" className="search-btn">Search</button>
       </form>
 
-      {books.length > 0 && (
-        <CategoryFilter 
-          categories={categories}
-          selectedCategories={selectedCategories}
-          onToggleCategory={toggleCategory}
-          books={books}
-        />
-      )}
+      {/* Category Filter */}
+      <CategoryFilter 
+        categories={categories}
+        selectedCategories={selectedCategories}
+        onToggleCategory={toggleCategory}
+      />
 
+      {/* Book Grid */}
       <BookGrid
-        books={currentBooks}
+        books={books}
         onBookSelect={handleBookSelect}
       />
 
-      {currentBooks.length === 0 && (
-        <p>{emptyMessage}</p>
-      )}
+      {/* Empty message */}
+      {books.length === 0 && <p>{emptyMessage}</p>}
 
-      {filteredBooks.length > booksPerPage && (
+      {/* Pagination */}
+      {totalPages > 1 && (
         <PaginationControls
           currentPage={pageNum}
-          totalItems={filteredBooks.length}
+          totalItems={totalPages * booksPerPage}
           itemsPerPage={booksPerPage}
           onPageChange={handlePageChange}
         />
       )}
 
+      {/* Book Popup */}
       {showPopup && (
         <BookPopUp 
           book={selectedBook} 

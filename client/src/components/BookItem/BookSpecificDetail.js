@@ -13,9 +13,10 @@ const BookSpecificDetail = ({ book }) => {
 const BookDescription = ({ description }) => (
   <div>
     <h3>Description:</h3>
-    <p>No description</p>
+    <p>{description ? description : "N/A"}</p>
   </div>
 );
+
 
 const BookCategories = ({ categories }) => {
   const categoryList = Array.isArray(categories) 

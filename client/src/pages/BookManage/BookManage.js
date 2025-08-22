@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import BookPopUp from '../../components/BookItem/BookPopUp';
 import PaginationControls from '../../components/BookItem/pageControl';
@@ -7,84 +7,69 @@ import categories from '../../data/Category.json';
 import CategoryFilter from '../../components/BookItem/CategoryFilter';
 import EditBookPopup from '../../components/BookItem/EditBookPopUp';
 import './BookManage.css';
-import { API_URL } from  '../../config';
+import { API_URL } from '../../config';
 
 const BookManage = () => {
   const [books, setBooks] = useState([]);
-  const [filteredBooks, setFilteredBooks] = useState([]);
-  const [searchParams, setSearchParams] = useSearchParams();
   const [inputValue, setInputValue] = useState('');
+  const [selectedCategories, setSelectedCategories] = useState([]);
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchCategories, setSearchCategories] = useState([]);
+
   const [selectedBook, setSelectedBook] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
-  const [selectedCategories, setSelectedCategories] = useState([]);
-  const [click, setClick] = useState(false);
-  const navigate = useNavigate();
+
   const [editingBook, setEditingBook] = useState(null);
   const [showEdit, setShowEdit] = useState(false);
 
-  const pageNum = parseInt(searchParams.get('page')) || 0;
+  const [totalPages, setTotalPages] = useState(1);
+  const [currentBooks, setCurrentBooks] = useState([]);
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+
+  const pageNum = parseInt(searchParams.get('page')) || 1;
   const booksPerPage = 12;
-  const currentBooks = filteredBooks.slice(
-    pageNum * booksPerPage,
-    (pageNum + 1) * booksPerPage
-  );
 
-  const selectedCategoriesRef = useRef(selectedCategories);
-
-  useEffect(() => {
-    selectedCategoriesRef.current = selectedCategories;
-  }, [selectedCategories]);
-
-  useEffect(() => {
-    fetch(`${API_URL}/books`)
-      .then(res => res.json())
-      .then(data => {
-        setBooks(data);
-        setFilteredBooks(data);
-      })
-      .catch(err => console.error(err));
-  }, []);
-
-  useEffect(() => {
-    const results = books.filter(book => {
-      const searchTerm = inputValue.toLowerCase().trim();
-      const titleMatch = book.title?.toLowerCase().includes(searchTerm) ?? false;
-      const authorMatch = book.brand?.toLowerCase().includes(searchTerm) ?? false;
-      
-      let categoryMatch = selectedCategoriesRef.current.length === 0;
-      
-      if (!categoryMatch && book.categories) {
-        const categoryPaths = Array.isArray(book.categories) ? book.categories : [];
-        
-        categoryMatch = categoryPaths.some(cat => {
-          try {
-            const path = Array.isArray(cat) 
-              ? cat.join(' / ') 
-              : String(cat || '');
-            return selectedCategoriesRef.current.some(selectedCat => 
-              path.toLowerCase().includes(selectedCat.toLowerCase())
-            );
-          } catch {
-            return false;
-          }
-        });
-      }
-
-      return (titleMatch || authorMatch) && categoryMatch;
-    });
-
-    setFilteredBooks(results);
-  }, [inputValue, click, books]);
-
-  // Tìm kiếm
-  const handleSearch = (e) => {
-    e.preventDefault();
-    const searchValue = e.target.elements.search?.value || '';
-    setInputValue(searchValue);
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem('auth_token');
+    return {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    };
   };
 
-  const noti = () => {
-    navigate('/logIn');
+  const fetchBooks = async () => {
+    const params = new URLSearchParams();
+    params.append('page', pageNum);
+    params.append('limit', booksPerPage);
+    if (searchQuery) params.append('search', searchQuery);
+    searchCategories.forEach(cat => params.append('categories', cat));
+
+    try {
+      const res = await fetch(`${API_URL}/books/search?${params.toString()}`);
+      const data = await res.json();
+      const booksArray = Array.isArray(data.books) ? data.books : [];
+      setBooks(booksArray);
+      setCurrentBooks(booksArray);
+      setTotalPages(data.totalPages || 1);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    if (localStorage.getItem('check') === 'true') {
+      fetchBooks();
+    }
+  }, [searchQuery, searchCategories, pageNum]);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    setSearchQuery(inputValue);
+    setSearchCategories(selectedCategories);
+    setSearchParams({ page: 1 });
   };
 
   const toggleCategory = (category) => {
@@ -95,58 +80,69 @@ const BookManage = () => {
     );
   };
 
-  const handleDeleteBook = (bookToDelete) => {
-    if (window.confirm(`Are you sure you want to delete "${bookToDelete.title}"?`)) {
-      fetch(`${API_URL}/books/${encodeURIComponent(bookToDelete.asin)}`, {
-        method: "DELETE"
-      })
-        .then(res => {
-          if (!res.ok) throw new Error("Failed to delete book");
-          return res.json();
-        })
-        .then(() => {
-          setBooks(prev => prev.filter(book => book.asin !== bookToDelete.asin));
-          setFilteredBooks(prev => prev.filter(book => book.asin !== bookToDelete.asin));
-        })
-        .catch(err => console.error("Delete error:", err));
+  const handleAddBook = () => {
+    setEditingBook({});
+    setShowEdit(true);
+  };
+
+  const handleEditBook = (book) => {
+    setEditingBook(book);
+    setShowEdit(true);
+  };
+
+  const handleSaveEdit = async (bookData) => {
+    const isNew = !bookData.asin;
+    if (!isNew && editingBook && JSON.stringify(editingBook) === JSON.stringify(bookData)) {
+      setShowEdit(false);
+      return;
+    }
+
+    const url = `${API_URL}/books${isNew ? '' : '/' + encodeURIComponent(bookData.asin)}`;
+
+    try {
+      const res = await fetch(url, {
+        method: isNew ? 'POST' : 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(bookData)
+      });
+
+      if (!res.ok) throw new Error(isNew ? 'Failed to add book' : 'Failed to update book');
+      await res.json();
+
+      alert(`Book ${isNew ? 'added' : 'updated'} successfully!`);
+      setShowEdit(false);
+      fetchBooks();
+    } catch (err) {
+      console.error(err);
+      alert(err.message);
+      if (err.message.includes('Unauthorized')) handleLogout();
     }
   };
 
 
-  const handleEditBook = (bookToEdit) => {
-    setEditingBook(bookToEdit);
-    setShowEdit(true);
+  const handleDeleteBook = async (book) => {
+    if (!window.confirm(`Are you sure you want to delete "${book.title}"?`)) return;
+
+    try {
+      const res = await fetch(`${API_URL}/books/${encodeURIComponent(book.asin)}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      });
+      if (!res.ok) throw new Error('Failed to delete book');
+      await res.json();
+
+      alert('Book deleted successfully!');
+      fetchBooks();
+    } catch (err) {
+      console.error(err);
+      alert(err.message);
+      if (err.message.includes('Unauthorized')) handleLogout();
+    }
   };
 
-const handleAddBook = () => {
-  const emptyBook={}; 
-  setEditingBook(emptyBook);
-  setShowEdit(true);
-};
-
-  const handleSaveEdit = (bookData) => {
-    const isNew = !bookData.asin; 
-
-    fetch(`${API_URL}/books${isNew ? "" : "/" + encodeURIComponent(bookData.asin)}`, {
-      method: isNew ? "POST" : "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(bookData)
-    })
-      .then(res => {
-        if (!res.ok) throw new Error(isNew ? "Failed to add book" : "Failed to update book");
-        return res.json();
-      })
-      .then(data => {
-        if (isNew) {
-          setBooks(prev => [...prev, data]);
-          setFilteredBooks(prev => [...prev, data]);
-        } else {
-          setBooks(prev => prev.map(book => book.asin === data.asin ? data : book));
-          setFilteredBooks(prev => prev.map(book => book.asin === data.asin ? data : book));
-        }
-        setShowEdit(false);
-      })
-      .catch(err => console.error(isNew ? "Add error:" : "Update error:", err));
+  const handleLogout = () => {
+    localStorage.clear();
+    window.location.reload();
   };
 
   const handleBookSelect = (book) => {
@@ -154,93 +150,90 @@ const handleAddBook = () => {
     setShowPopup(true);
   };
 
-  const clickCheck = () => setClick(prev => !prev);
-
   const closePopup = () => setShowPopup(false);
 
   const handlePageChange = (direction) => {
-    const newPage = direction === 'next' ? pageNum + 1 : pageNum - 1;
+    let newPage = pageNum;
+    if (direction === 'next' && pageNum < totalPages) newPage++;
+    else if (direction === 'prev' && pageNum > 1) newPage--;
     setSearchParams({ page: newPage });
     window.scrollTo({ top: 0 });
   };
 
-  const emptyMessage = inputValue 
-    ? `No books found for "${inputValue}"`
+  const emptyMessage = searchQuery || searchCategories.length > 0
+    ? 'No books found for your search/filter'
     : 'Enter a search term to find books';
 
-  if (localStorage.getItem('check') === 'true')
-    return (
-      <div className="book-finding-page">
-        <h1 className="page-title">Book managing</h1>
-        
-        <form onSubmit={handleSearch} className="search-bar">
-          <input
-            type="text"
-            name="search"
-            placeholder="Search by author's name or title"
-            className="search-input"
-            defaultValue={inputValue} 
-          />
-          <button onClick={clickCheck} type="submit" className="search-btn">
-            Search
-          </button>
-          <button onClick={handleAddBook} className="search-btn">
-            Add Book
-          </button>
-        </form>
-
-        <CategoryFilter 
-          categories={categories} 
-          selectedCategories={selectedCategories}
-          onToggleCategory={toggleCategory}
-          books={books}  
-        />
-
-        <BookGridEdit
-          books={currentBooks}
-          onBookSelect={handleBookSelect}
-          onDeleteBook={handleDeleteBook}
-          onEditBook={handleEditBook}
-        />
-
-        {showEdit && (
-          <EditBookPopup
-            book={editingBook}
-            onClose={() => setShowEdit(false)}
-            onSave={handleSaveEdit}
-          />
-        )}
-
-        {currentBooks.length === 0 && <p>{emptyMessage}</p>}
-
-        {filteredBooks.length > booksPerPage && (
-          <PaginationControls
-            currentPage={pageNum}
-            totalItems={filteredBooks.length}
-            itemsPerPage={booksPerPage}
-            onPageChange={handlePageChange}
-          />
-        )}
-
-        {showPopup && (
-          <BookPopUp 
-            book={selectedBook} 
-            onClose={closePopup} 
-          />
-        )}
-      </div>
-    )
-  else
+  if (localStorage.getItem('check') !== 'true') {
     return (
       <div className='notification'>
         <div className='notification-message'>
           You're not allowed to access this page
         </div>
-        <button onClick={noti}>
+        <button onClick={() => navigate('/logIn')}>
           Please login to continue
         </button>
       </div>
     );
+  }
+
+  return (
+    <div className="book-manage-page">
+      <h1 className="page-title">Book Managing</h1>
+
+      <form onSubmit={handleSearch} className="search-bar">
+        <input
+          type="text"
+          name="search"
+          placeholder="Search by author's name or title"
+          className="search-input"
+          value={inputValue}
+          onChange={e => setInputValue(e.target.value)}
+        />
+        <button type="submit" className="search-btn">Search</button>
+        <button type="button" className="search-btn" onClick={handleAddBook}>Add Book</button>
+      </form>
+
+      <CategoryFilter
+        categories={categories}
+        selectedCategories={selectedCategories}
+        onToggleCategory={toggleCategory}
+      />
+
+      <BookGridEdit
+        books={currentBooks}
+        onBookSelect={handleBookSelect}
+        onEditBook={handleEditBook}
+        onDeleteBook={handleDeleteBook}
+      />
+
+      {showEdit && (
+        <EditBookPopup
+          book={editingBook}
+          onClose={() => setShowEdit(false)}
+          onSave={handleSaveEdit}
+        />
+      )}
+
+      {currentBooks.length === 0 && <p>{emptyMessage}</p>}
+
+      {totalPages > 1 && (
+        <PaginationControls
+          currentPage={pageNum}
+          totalItems={totalPages * booksPerPage}
+          itemsPerPage={booksPerPage}
+          onPageChange={handlePageChange}
+        />
+      )}
+
+      {showPopup && (
+        <BookPopUp
+          book={selectedBook}
+          onClose={closePopup}
+        />
+      )}
+    </div>
+  );
 };
 
 export default BookManage;

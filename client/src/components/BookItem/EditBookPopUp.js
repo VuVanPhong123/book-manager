@@ -117,6 +117,17 @@ const EditBookPopup = ({ book, onClose, onSave }) => {
                 </li>
                 <li>
                   <label>
+                    Description:
+                    <input
+                      type="text"
+                      name="description"
+                      value={formData.description}
+                      onChange={handleChange}
+                    />
+                  </label>
+                </li>
+                <li>
+                  <label>
                     Rating:
                     <input
                       type="text"

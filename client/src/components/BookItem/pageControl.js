@@ -8,8 +8,8 @@ const PaginationControls = ({
   onPageChange
 }) => {
   const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const isFirstPage = currentPage === 0;
-  const isLastPage = currentPage + 1 >= totalPages;
+  const isFirstPage = currentPage === 1;
+  const isLastPage = currentPage >= totalPages;
 
   return (
     <div className="page-controls">
@@ -23,7 +23,7 @@ const PaginationControls = ({
       </button>
 
       <span className="page-indicator">
-        Page {currentPage + 1} of {totalPages}
+        Page {currentPage} of {totalPages}
       </span>
 
       <button
