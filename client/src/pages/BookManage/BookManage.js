@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react'; // <-- Thêm useCallback
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import BookPopUp from '../../components/BookItem/BookPopUp';
 import PaginationControls from '../../components/BookItem/pageControl';
@@ -10,7 +10,6 @@ import './BookManage.css';
 import { API_URL } from '../../config';
 
 const BookManage = () => {
-  const [books, setBooks] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [selectedCategories, setSelectedCategories] = useState([]);
 
@@ -40,7 +39,8 @@ const BookManage = () => {
     };
   };
 
-  const fetchBooks = async () => {
+  // Sử dụng useCallback để memoize fetchBooks
+  const fetchBooks = useCallback(async () => {
     const params = new URLSearchParams();
     params.append('page', pageNum);
     params.append('limit', booksPerPage);
@@ -51,19 +51,18 @@ const BookManage = () => {
       const res = await fetch(`${API_URL}/books/search?${params.toString()}`);
       const data = await res.json();
       const booksArray = Array.isArray(data.books) ? data.books : [];
-      setBooks(booksArray);
       setCurrentBooks(booksArray);
       setTotalPages(data.totalPages || 1);
     } catch (err) {
       console.error(err);
     }
-  };
+  }, [pageNum, searchQuery, searchCategories]); // <-- Thêm dependencies
 
   useEffect(() => {
     if (localStorage.getItem('check') === 'true') {
       fetchBooks();
     }
-  }, [searchQuery, searchCategories, pageNum]);
+  }, [fetchBooks, searchQuery, searchCategories, pageNum]); // <-- Thêm fetchBooks vào dependencies
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -111,14 +110,13 @@ const BookManage = () => {
 
       alert(`Book ${isNew ? 'added' : 'updated'} successfully!`);
       setShowEdit(false);
-      fetchBooks();
+      fetchBooks(); // <-- Sử dụng fetchBooks đã được memoized
     } catch (err) {
       console.error(err);
       alert(err.message);
       if (err.message.includes('Unauthorized')) handleLogout();
     }
   };
-
 
   const handleDeleteBook = async (book) => {
     if (!window.confirm(`Are you sure you want to delete "${book.title}"?`)) return;
@@ -132,7 +130,7 @@ const BookManage = () => {
       await res.json();
 
       alert('Book deleted successfully!');
-      fetchBooks();
+      fetchBooks(); // <-- Sử dụng fetchBooks đã được memoized
     } catch (err) {
       console.error(err);
       alert(err.message);

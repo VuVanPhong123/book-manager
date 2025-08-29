@@ -80,7 +80,6 @@ const Login = () => {
         if (response.ok) {
         alert('Register successful! Please login.');
         setIsLogin(true);
-        // Reset form
         setUsername('');
         setEmail('');
         setPassword('');
@@ -100,7 +99,6 @@ const Login = () => {
             setError('User already exists. Please try different credentials.');
             }
         } else if (data.type === 'validation' && data.errors) {
-            // Hiển thị lỗi validation đầu tiên
             setError(data.errors[0].msg || 'Please check your input fields.');
         } else {
             setError(data.message || 'Registration failed. Please try again.');
@@ -112,7 +110,6 @@ const Login = () => {
     }
   };
 
-  // Đăng xuất
   const handleLogout = () => {
     localStorage.removeItem('auth_token');
     localStorage.removeItem('user_id');
